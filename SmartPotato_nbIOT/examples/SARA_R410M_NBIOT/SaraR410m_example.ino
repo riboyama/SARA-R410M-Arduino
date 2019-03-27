@@ -43,6 +43,7 @@ const char* cdp = "172.16.14.22";
 uint8_t cid = 1;                      // Unsupported for R4XX
 const uint8_t band = 20;              // Narrowband band
 const char* forceOperator = "20404";  // Vodafone operator ID
+const int maxByteReceive = 100;       // Read maximum 100*2 bytes at UDP read
 
 Sodaq_nbIOT nbiot;
 
@@ -75,7 +76,7 @@ void setup()
     sodaq_wdt_safe_delay(STARTUP_DELAY);
 
     DEBUG_STREAM.begin(DEBUG_STREAM_BAUD);
-    DEBUG_STREAM.println("Initializing and connecting... ");
+    DEBUG_STREAM.println("Initializing library");
 
     MODEM_STREAM.begin(nbiot.getSaraR4Baudrate());
     nbiot.setDiag(DEBUG_STREAM);
@@ -103,7 +104,7 @@ void loop()
 
 void sendMessage(int socketID) {
     //String is converted to hex in library.
-    const char* strBuffer = "test";
+    const char* strBuffer = "This is a test string";
     size_t size = strlen(strBuffer);
 
 
@@ -123,9 +124,10 @@ void waitForResponse() {
             char data[200];
             // read two bytes at a time
             SaraN2UDPPacketMetadata p;
-            int size = nbiot.socketReceiveHex(data, 2, &p);
+            int size = nbiot.socketReceiveHex(data, maxByteReceive, &p);
 
             if (size) {
+                DEBUG_STREAM.println("UDP Packet received!");
                 DEBUG_STREAM.println(data);
                 // p is a pointer to memory that is owned by nbiot class
                 DEBUG_STREAM.println(p.socketID);
@@ -133,6 +135,7 @@ void waitForResponse() {
                 DEBUG_STREAM.println(p.port);
                 DEBUG_STREAM.println(p.length);
                 DEBUG_STREAM.println(p.remainingLength);
+                DEBUG_STREAM.println("End of data");
             }
             else {
                 DEBUG_STREAM.println("Receive failed!");
