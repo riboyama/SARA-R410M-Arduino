@@ -1,6 +1,6 @@
 # SARA-R410M-Arduino
 
-Arduino library for using with the uBlox nbIOT SARA R410M module.
+Arduino library for the uBlox nbIOT SARA R410M module.
 
 ## Usage
 
