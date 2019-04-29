@@ -26,3 +26,9 @@ Method|Description
 **getPendingUDPBytes()**| Return the number of pending bytes, gets updated by calling socketReceiveXXX.
 **hasPendingUDPBytes()**| Helper function returning if getPendingUDPBytes() > 0.
 **waitForUDPResponse(uint32_t timeoutMS = DEFAULT_UDP_TIMOUT_MS)**|Calls isAlive() until the passed timeout, or until a UDP packet has been received on any socket.
+**void setPowerSaveMode(bool enabled)**| Enables the Deep sleep mode of the module
+**void setModemStatusPin()**| Set the GPIO pin
+**void getModemStatus()**| Get the status from set GPIO pin
+**void forcePSM()**| Instantly go to PSM mode
+**bool waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000)**| Wait for SQ
+**void purgeAllResponsesRead()**| Clear modem Serial
