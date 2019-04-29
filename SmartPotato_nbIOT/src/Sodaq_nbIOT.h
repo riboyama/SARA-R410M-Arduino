@@ -91,6 +91,13 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         
         // Returns true if the modem is connected to the network and has an activated data connection.
         bool isConnected();
+
+        void setPowerSaveMode(bool enabled);
+        void setModemStatusPin();
+        void getModemStatus();
+        void forcePSM();
+        bool waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000);
+        void purgeAllResponsesRead();
         
         // Gets the Received Signal Strength Indication in dBm and Bit Error Rate.
         // Returns true if successful.
@@ -111,7 +118,6 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         size_t socketReceiveBytes(uint8_t* buffer, size_t length, SaraN2UDPPacketMetadata* p = NULL);
         size_t getPendingUDPBytes();
         bool hasPendingUDPBytes();
-        bool ping(const char* ip);
         bool closeSocket(uint8_t socket);
         bool waitForUDPResponse(uint32_t timeoutMS = SODAQ_NBIOT_DEFAULT_UDP_TIMOUT_MS);
         
@@ -156,7 +162,7 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
                                 (void*)callbackParameter, (void*)callbackParameter2, outSize, timeout);
         };
         
-        void purgeAllResponsesRead();
+        
     private:
         //uint16_t _socketPendingBytes[SOCKET_COUNT]; // TODO add getter
         //bool _socketClosedBit[SOCKET_COUNT];
@@ -195,7 +201,7 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
 
         bool setR4XXToNarrowband();
 
-        bool waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000);
+        
         bool attachGprs(uint32_t timeout = 10L * 60L * 1000);
         void reboot();
         bool doSIMcheck();
@@ -218,7 +224,6 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         static ResponseTypes _messageReceiveParser(ResponseTypes& response, const char* buffer, size_t size, size_t* length, char* data);
 
         static ResponseTypes _cgattParser(ResponseTypes& response, const char* buffer, size_t size, uint8_t* result, uint8_t* dummy);
-        static ResponseTypes _nconfigParser(ResponseTypes& response, const char* buffer, size_t size, bool* nconfigEqualsArray, uint8_t* dummy);
         static ResponseTypes _cpinParser(ResponseTypes& response, const char* buffer, size_t size, SimStatuses* parameter, uint8_t* dummy);
         static ResponseTypes _nakedStringParser(ResponseTypes& response, const char* buffer, size_t size, char* stringBuffer, size_t* stringBufferSize);
 };

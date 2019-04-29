@@ -82,16 +82,6 @@ typedef struct NameValuePair {
     bool Value;
 } NameValuePair;
 
-const uint8_t nConfigCount = 6;
-static NameValuePair nConfig[nConfigCount] = {
-    { "AUTOCONNECT", false },
-    { "CR_0354_0338_SCRAMBLING", true },
-    { "CR_0859_SI_AVOID", false },
-    { "COMBINE_ATTACH", false },
-    { "CELL_RESELECTION", false },
-    { "ENABLE_BIP", false },
-};
-
 class Sodaq_nbIotOnOff : public Sodaq_OnOffBee
 {
     public:
@@ -237,6 +227,7 @@ ResponseTypes Sodaq_nbIOT::_cpinParser(ResponseTypes& response, const char* buff
 
     return ResponseError;
 }
+
 
 // Returns the current SIM status.
 Sodaq_nbIOT::SimStatuses Sodaq_nbIOT::getSimStatus()
@@ -544,32 +535,6 @@ void Sodaq_nbIOT::reboot()
     while ((readResponse() != ResponseOK) && !is_timedout(start, 2000)) { }
 }
 
-ResponseTypes Sodaq_nbIOT::_nconfigParser(ResponseTypes& response, const char* buffer, size_t size, bool* nconfigEqualsArray, uint8_t* dummy)
-{
-    if (!nconfigEqualsArray) {
-        return ResponseError;
-    }
-    
-    char name[32];
-    char value[32];
-    
-    if (sscanf(buffer, "+NCONFIG: \"%[^\"]\",\"%[^\"]\"", name, value) == 2) {
-        for (uint8_t i = 0; i < nConfigCount; i++) {
-            if (strcmp(nConfig[i].Name, name) == 0) {
-                if (strcmp(nConfig[i].Value ? "TRUE" : "FALSE", value) == 0) {
-                    nconfigEqualsArray[i] = true;
-                    
-                    break;
-                }
-            }
-        }
-        
-        return ResponsePendingExtra;
-    }
-    
-    return ResponseError;
-}
-
 bool Sodaq_nbIOT::attachGprs(uint32_t timeout)
 {
     uint32_t start = millis();
@@ -621,20 +586,6 @@ bool Sodaq_nbIOT::closeSocket(uint8_t socketID)
     return readResponse() == ResponseOK;
 }
 
-bool Sodaq_nbIOT::ping(const char* ip)
-{
-    if (_isSaraR4XX) {
-        debugPrintLn("Ping not supported by R4XX");
-        return false;
-    }
-    print("AT+NPING=");
-    print("\"");
-    print(ip);
-    println("\"");
-    
-    return readResponse() == ResponseOK;
-}
-
 size_t Sodaq_nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t remotePort, const uint8_t* buffer, size_t size)
 {
     if (size > SODAQ_NBIOT_MAX_UDP_BUFFER) {
@@ -676,6 +627,9 @@ size_t Sodaq_nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint1
 
 size_t Sodaq_nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t remotePort, const char* str)
 {
+    debugPrintLn("Setting data transfer to hex mode");
+    println("AT+UDCONF=1,1");
+    readResponse();
     return socketSend(socket, remoteIP, remotePort, (uint8_t *)str, strlen(str));
 }
 
@@ -955,6 +909,33 @@ ResponseTypes Sodaq_nbIOT::_udpReadURCParser(ResponseTypes& response, const char
     return ResponseError;
 }
 
+// Set powersave mode
+void Sodaq_nbIOT::setPowerSaveMode(bool enabled) {
+    if (enabled) {
+        println("AT+CPSMS=1,,,\"11011111\",\"00000100\"");
+    } else {
+        println("AT+CPSMS=0,,,\"11011111\",\"00000100\"");
+    }
+    readResponse();
+}
+
+void Sodaq_nbIOT::getModemStatus() {
+    println("AT+UGPIOC?");
+    debugPrintLn(readResponse());
+}
+
+void Sodaq_nbIOT::setModemStatusPin() {
+    println("AT+UGPIOC?");
+    debugPrintLn(readResponse());
+}
+
+// Enter the PowerSave mode asap
+void Sodaq_nbIOT::forcePSM() {
+    setPowerSaveMode(true);
+    reboot();
+}
+
+
 // Disconnects the modem from the network.
 bool Sodaq_nbIOT::disconnect()
 {
@@ -1095,7 +1076,8 @@ bool Sodaq_nbIOT::waitForSignalQuality(uint32_t timeout)
     uint32_t delay_count = 500;
     debugPrintLn("Establishing signal");
     while (!is_timedout(start, timeout)) {
-		debugPrintLn("Establishing signal");
+        debugPrint("Sara Status ");
+        debugPrintLn(digitalRead(SARA_STATUS));
         if (getRSSIAndBER(&rssi, &ber)) {
             if (rssi != 0 && rssi >= minRSSI) {
                 _lastRSSI = rssi;
