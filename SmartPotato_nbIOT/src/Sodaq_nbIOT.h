@@ -92,12 +92,12 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         // Returns true if the modem is connected to the network and has an activated data connection.
         bool isConnected();
 
-        void setPowerSaveMode(bool enabled);
-        void setModemStatusPin();
-        void getModemStatus();
-        void forcePSM();
+        void setPowerSaveMode(bool enabled, String tauTimer, String activeTimer);
+        void forcePowerSave();
+        void recoverFromPSM();
         bool waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000);
         void purgeAllResponsesRead();
+        bool enableTZUpdate();
         
         // Gets the Received Signal Strength Indication in dBm and Bit Error Rate.
         // Returns true if successful.

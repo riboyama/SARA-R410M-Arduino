@@ -909,29 +909,39 @@ ResponseTypes Sodaq_nbIOT::_udpReadURCParser(ResponseTypes& response, const char
     return ResponseError;
 }
 
-// Set powersave mode
-void Sodaq_nbIOT::setPowerSaveMode(bool enabled) {
+/**
+ * Sets the Power Save Mode of the SARA-R4.
+ * See  13.2.3 T3412 timer (Periodic TAU) of the Application Notes for the tauTimer
+ *      13.2.4 T3324 timer (Active Time) of the Application Notes for the Active Timer
+ * E.g. 11011111 and 00000100
+ * */
+void Sodaq_nbIOT::setPowerSaveMode(bool enabled, String tauTimer, String activeTimer) {
+    String command = "AT+CPSMS=1,,,\"" + tauTimer + "\",\" " + activeTimer + "\"";
     if (enabled) {
-        println("AT+CPSMS=1,,,\"11011111\",\"00000100\"");
+        println(command);
     } else {
         println("AT+CPSMS=0,,,\"11011111\",\"00000100\"");
     }
     readResponse();
 }
 
-void Sodaq_nbIOT::getModemStatus() {
-    println("AT+UGPIOC?");
-    debugPrintLn(readResponse());
+bool Sodaq_nbIOT::enableTZUpdate() {
+    println("AT+CTZU=1");
+    return (readResponse() == ResponseOK);
 }
 
-void Sodaq_nbIOT::setModemStatusPin() {
-    println("AT+UGPIOC?");
-    debugPrintLn(readResponse());
+void Sodaq_nbIOT::recoverFromPSM() {
+    debugPrintLn("Interrupting power save mode");
+    pinMode(SARA_R4XX_TOGGLE, OUTPUT);
+    digitalWrite(SARA_R4XX_TOGGLE, LOW);
+    sodaq_wdt_safe_delay(2000);
+    pinMode(SARA_R4XX_TOGGLE, INPUT);
 }
 
 // Enter the PowerSave mode asap
-void Sodaq_nbIOT::forcePSM() {
-    setPowerSaveMode(true);
+void Sodaq_nbIOT::forcePowerSave() {
+    setPowerSaveMode(true, "11011111", "00000100");
+    readResponse();
     reboot();
 }
 
