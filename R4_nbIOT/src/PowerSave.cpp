@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <Sodaq_wdt.h>
 #include <ArduinoLowPower.h>
-#include "Potato_PSM.h"
+#include "PowerSave.h"
 
 Sodaq_LSM303AGR accelerometer;
 double threshold = 1.5;
@@ -43,9 +43,9 @@ void PowerSave::enableAcceleroInt(voidFuncPtr callback) {
 }
 
 
-void PowerSave::enableSleepModeTimed(int millis) {
+void PowerSave:: enableSleepModeTimed(int millis) {
     detachUSB();
-    LowPower.sleep();
+    LowPower.sleep(millis);
 }
 
 void PowerSave::attachInterrupt() {

@@ -18,13 +18,13 @@
     <https://www.gnu.org/licenses/>. 
 */
 
-#ifndef _Sodaq_nbIOT_h
-#define _Sodaq_nbIOT_h
+#ifndef _nbIOT_h
+#define _nbIOT_h
 
-#define SODAQ_NBIOT_DEFAULT_UDP_TIMOUT_MS 15000
-#define SODAQ_NBIOT_MAX_UDP_BUFFER 256
+#define nbIOT_DEFAULT_UDP_TIMOUT_MS 15000
+#define nbIOT_MAX_UDP_BUFFER 256
 
-#define SODAQ_NBIOT_DEFAULT_CID 0
+#define nbIOT_DEFAULT_CID 0
 
 #include "Arduino.h"
 #include "Sodaq_AT_Device.h"
@@ -37,10 +37,10 @@ struct SaraN2UDPPacketMetadata {
     int remainingLength;
 };
 
-class Sodaq_nbIOT: public Sodaq_AT_Device
+class nbIOT: public Sodaq_AT_Device
 {
     public:
-        Sodaq_nbIOT();
+        nbIOT();
         
         enum SimStatuses {
             SimStatusUnknown = 0,
@@ -81,7 +81,7 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
 
         
         // Initializes the modem instance. Sets the modem stream and the on-off power pins.
-        void init(Stream& stream, int8_t onoffPin, int8_t txEnablePin = -1, int8_t saraR4XXTogglePin = -1, uint8_t cid = SODAQ_NBIOT_DEFAULT_CID);
+        void init(Stream& stream, int8_t onoffPin, int8_t txEnablePin = -1, int8_t saraR4XXTogglePin = -1, uint8_t cid = nbIOT_DEFAULT_CID);
 
         // Turns on and initializes the modem, then connects to the network and activates the data connection.
         bool connect(const char* apn, const char* cdp, const char* forceOperator = 0, uint8_t band = 8);
@@ -92,8 +92,7 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         // Returns true if the modem is connected to the network and has an activated data connection.
         bool isConnected();
 
-        void setPowerSaveMode(bool enabled, String tauTimer, String activeTimer);
-        void forcePowerSave();
+        void setPowerSaveMode(bool enabled, const char* tauTimer, const char* activeTimer);
         void recoverFromPSM();
         bool waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000);
         void purgeAllResponsesRead();
@@ -119,7 +118,7 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         size_t getPendingUDPBytes();
         bool hasPendingUDPBytes();
         bool closeSocket(uint8_t socket);
-        bool waitForUDPResponse(uint32_t timeoutMS = SODAQ_NBIOT_DEFAULT_UDP_TIMOUT_MS);
+        bool waitForUDPResponse(uint32_t timeoutMS = nbIOT_DEFAULT_UDP_TIMOUT_MS);
         
         
         bool sendMessage(const char* str);
@@ -200,7 +199,6 @@ class Sodaq_nbIOT: public Sodaq_AT_Device
         static bool isValidIPv4(const char* str);
 
         bool setR4XXToNarrowband();
-
         
         bool attachGprs(uint32_t timeout = 10L * 60L * 1000);
         void reboot();
