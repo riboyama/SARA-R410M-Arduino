@@ -97,7 +97,12 @@ class nbIOT: public Sodaq_AT_Device
         bool waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000);
         void purgeAllResponsesRead();
         bool enableTZUpdate();
+        bool attachGprs(uint32_t timeout = 10L * 60L * 1000);
         
+        bool httpPost(uint8_t profile, const char* endpoint, const char* message);
+        bool httpControl(uint8_t profile, uint8_t code, const char* data);
+       
+
         // Gets the Received Signal Strength Indication in dBm and Bit Error Rate.
         // Returns true if successful.
         bool getRSSIAndBER(int8_t* rssi, uint8_t* ber);
@@ -200,7 +205,7 @@ class nbIOT: public Sodaq_AT_Device
 
         bool setR4XXToNarrowband();
         
-        bool attachGprs(uint32_t timeout = 10L * 60L * 1000);
+        
         void reboot();
         bool doSIMcheck();
         bool setSimPin(const char* simPin);

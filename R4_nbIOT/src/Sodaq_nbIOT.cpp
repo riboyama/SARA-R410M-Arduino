@@ -126,9 +126,6 @@ void nbIOT::init(Stream& stream, int8_t onoffPin, int8_t txEnablePin, int8_t sar
     debugPrintLn("Initializing");
 
     _isSaraR4XX = (saraR4XXTogglePin != -1);
-    if (_isSaraR4XX) {
-        debugPrintLn("Enabling sara R4XX functionality");
-    }
 
     initBuffer(); // safe to call multiple times
     
@@ -542,8 +539,10 @@ bool nbIOT::attachGprs(uint32_t timeout)
     println("AT+CEREG=2");
     while (!is_timedout(start, timeout)) {
         if (isConnected()) {
+            debugPrintLn("Registered to Network")
             return true;
         }
+        debugPrintLn("Registration timeout")
         
         // println("AT+CGATT=1");
         // readResponse(); // get Error 51 Command implemented but currently disabled on N2
@@ -623,6 +622,40 @@ size_t nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t re
     else {
         return 0;
     }
+}
+
+bool nbIOT::httpPost(uint8_t profile, const char* endpoint, const char* message) {
+    print("AT+UHTTPC=");
+    print(profile);
+    print(",");
+    print(5);
+    print(",");
+    print("\"");
+    print(endpoint);
+    print("\"");
+    print(",");
+    print("\"");
+    print("postResponse");
+    print("\"");
+    print(",");
+    print("\"");
+    print(message);
+    print("\"");
+    print(",");
+    println(0);
+    readResponse();
+}
+
+bool nbIOT::httpControl(uint8_t profile, uint8_t code, const char* data) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(code);
+    print(",");
+    print("\"");
+    print(data);
+    println("\"");
+    readResponse();
 }
 
 size_t nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t remotePort, const char* str)
@@ -926,6 +959,8 @@ void nbIOT::setPowerSaveMode(bool enabled, const char* tauTimer, const char* act
         println("AT+CPSMS=0");
     }
     readResponse();
+    println("AT+UCPSMS?");
+    readResponse();
 }
 
 bool nbIOT::enableTZUpdate() {
@@ -1081,9 +1116,10 @@ bool nbIOT::waitForSignalQuality(uint32_t timeout)
     
     uint32_t delay_count = 500;
     debugPrintLn("Establishing signal");
+    debugPrint("Sara Status ");
+    debugPrintLn(digitalRead(SARA_STATUS));
     while (!is_timedout(start, timeout)) {
-        debugPrint("Sara Status ");
-        debugPrintLn(digitalRead(SARA_STATUS));
+
         if (getRSSIAndBER(&rssi, &ber)) {
             if (rssi != 0 && rssi >= minRSSI) {
                 _lastRSSI = rssi;

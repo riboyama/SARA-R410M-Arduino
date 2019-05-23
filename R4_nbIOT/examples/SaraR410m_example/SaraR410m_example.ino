@@ -21,20 +21,24 @@
 #include "Sodaq_nbIOT.h"
 #include "Sodaq_wdt.h"
 
-#define R4XX
-
 #if defined(ARDUINO_SODAQ_SARA)
 /* SODAQ SARA */
 #define DEBUG_STREAM SerialUSB
 #define MODEM_STREAM Serial1
+#define DEBUG_STREAM_BAUD 115200
 #define powerPin SARA_ENABLE
 #define enablePin SARA_TX_ENABLE
+#elif defined(ARDUINO_SAMD_MKRNB1500)
+#define DEBUG_STREAM Serial
+#define DEBUG_STREAM_BAUD 9600
+#define MODEM_STREAM SerialSARA
+#define powerPin SARA_PWR_ON 
+#define enablePin SARA_RESETN  
 #else
 #error "Please use one of the listed boards or add your board."
 #endif
 
-#define DEBUG_STREAM SerialUSB
-#define DEBUG_STREAM_BAUD 115200
+
 
 #define STARTUP_DELAY 5000
 
@@ -45,30 +49,34 @@ const uint8_t band = 20;              // Narrowband band
 const char* forceOperator = "20404";  // Vodafone operator ID
 const int maxByteReceive = 100;       // Read maximum 100*2 bytes at UDP read
 
-Sodaq_nbIOT nbiot;
+// const char* apn = "cdp.iot.t-mobile.nl";
+// const char* cdp = "172.27.131.100";
+// uint8_t cid = 1;
+// const uint8_t band = 8;
+// const char* forceOperator = "20416"; // optional - depends on SIM / network
+
+nbIOT nbiot;
 
 void sendOverSocket()
 {
-    DEBUG_STREAM.println();
-    DEBUG_STREAM.println("Sending message through UDP");
-
     int localPort = 16666;
     int socketID = nbiot.createSocket(localPort);
 
     if (socketID >= 7 || socketID < 0) {
         DEBUG_STREAM.println("Failed to create socket");
         return;
+    } else {
+        DEBUG_STREAM.println("Created socket!");
+        DEBUG_STREAM.println();
+        DEBUG_STREAM.println("Sending message through UDP");
+        
+        sendMessage(socketID);
+        // wait for data
+        waitForResponse();
+
+        nbiot.closeSocket(socketID);
+        DEBUG_STREAM.println();
     }
-
-    DEBUG_STREAM.println("Created socket!");
-
-    
-    sendMessage(socketID);
-    // wait for data
-    waitForResponse();
-
-    nbiot.closeSocket(socketID);
-    DEBUG_STREAM.println();
 }
 
 void setup()
@@ -84,9 +92,9 @@ void setup()
 
     if (!nbiot.connect(apn, cdp, forceOperator, band)) {
         DEBUG_STREAM.println("Failed to connect to the modem!");
+    } else {
+        sendOverSocket();
     }
-
-    sendOverSocket();
 }
 
 void loop()
@@ -108,7 +116,7 @@ void sendMessage(int socketID) {
     size_t size = strlen(strBuffer);
 
 
-    int lengthSent = nbiot.socketSend(socketID, "195.34.89.241", 7, strBuffer); // "195.34.89.241" : 7 is the ublox echo service
+    int lengthSent = nbiot.socketSend(socketID, "195.34.89.241", 7, strBuffer); // ip "195.34.89.241", port 7 is the ublox echo service
     
     DEBUG_STREAM.print("String length vs sent: ");
     DEBUG_STREAM.print(size);
