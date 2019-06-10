@@ -624,38 +624,81 @@ size_t nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t re
     }
 }
 
-bool nbIOT::httpPost(uint8_t profile, const char* endpoint, const char* message) {
+bool nbIOT::httpControlIpV4Address(uint8_t profile, const char *address) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(0);
+    print(",\"");
+    print(address);
+    print("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpControlWebAddress(uint8_t profile, const char *address) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(1);
+    print(",\"");
+    print(address);
+    print("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpControlPort(uint8_t profile, const uint16_t port) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(5);
+    print(",\"");
+    print(port);
+    print("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpControlAddHeader(uint8_t profile, const char* headerData) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(9);
+    print(",\"");
+    print(headerData);
+    print("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpSendGet(uint8_t profile, const char* endpoint, const char* responseFile) {
     print("AT+UHTTPC=");
     print(profile);
     print(",");
     print(5);
-    print(",");
-    print("\"");
+    print(",\"");
     print(endpoint);
     print("\"");
+    print(",\"");
+    print(responseFile);
+    print("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpSendPostData(uint8_t profile, const char* endpoint, const char* message, nbIOT::ContentType ct, const char* responseFile) {
+    print("AT+UHTTPC=");
+    print(profile);
     print(",");
+    print(5);
+    print(",\"");
+    print(endpoint);
     print("\"");
-    print("postResponse");
+    print(",\"");
+    print(responseFile);
     print("\"");
-    print(",");
-    print("\"");
+    print(",\"");
     print(message);
     print("\"");
     print(",");
-    println(0);
-    readResponse();
-}
-
-bool nbIOT::httpControl(uint8_t profile, uint8_t code, const char* data) {
-    print("AT+UHTTP=");
-    print(profile);
-    print(",");
-    print(code);
-    print(",");
-    print("\"");
-    print(data);
-    println("\"");
-    readResponse();
+    println(ct);
+    return readResponse();
 }
 
 size_t nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t remotePort, const char* str)

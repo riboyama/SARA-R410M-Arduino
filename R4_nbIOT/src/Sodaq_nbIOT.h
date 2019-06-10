@@ -98,10 +98,23 @@ class nbIOT: public Sodaq_AT_Device
         void purgeAllResponsesRead();
         bool enableTZUpdate();
         bool attachGprs(uint32_t timeout = 10L * 60L * 1000);
+
+        enum ContentType{
+            form_urlencoded = 0,
+            plain = 1,
+            octet_stream = 2,
+            form_data = 3,
+            json = 4, // Only supported for PUT and POST file
+            xml = 5,
+            user_defined = 6
+        };
         
-        bool httpPost(uint8_t profile, const char* endpoint, const char* message);
-        bool httpControl(uint8_t profile, uint8_t code, const char* data);
-       
+        bool httpControlIpV4Address(uint8_t profile, const char* address);
+        bool httpControlWebAddress(uint8_t profile, const char* address);
+        bool httpControlPort(uint8_t profile, const uint16_t port);
+        bool httpControlAddHeader(uint8_t profile, const char* headerData);
+        bool httpSendGet(uint8_t profile, const char* endpoint, const char* responseFile="getRequest");
+        bool httpSendPostData(uint8_t profile, const char* endpoint, const char* message, ContentType contentType, const char* responseFile="postDataRequest");
 
         // Gets the Received Signal Strength Indication in dBm and Bit Error Rate.
         // Returns true if successful.
