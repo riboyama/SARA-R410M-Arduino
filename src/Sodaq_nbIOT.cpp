@@ -154,6 +154,7 @@ bool nbIOT::getIMEI(char* buffer, size_t size)
     println("AT+CGSN");
 
     return (readResponse<char, size_t>(_nakedStringParser, buffer, &size) == ResponseOK);
+    readResponse();
 }
 
 ResponseTypes nbIOT::_nakedStringParser(ResponseTypes& response, const char* buffer,
@@ -631,7 +632,7 @@ bool nbIOT::httpControlIpV4Address(uint8_t profile, const char *address) {
     print(0);
     print(",\"");
     print(address);
-    print("\"");
+    println("\"");
     return readResponse();
 }
 
@@ -642,7 +643,7 @@ bool nbIOT::httpControlWebAddress(uint8_t profile, const char *address) {
     print(1);
     print(",\"");
     print(address);
-    print("\"");
+    println("\"");
     return readResponse();
 }
 
@@ -651,9 +652,8 @@ bool nbIOT::httpControlPort(uint8_t profile, const uint16_t port) {
     print(profile);
     print(",");
     print(5);
-    print(",\"");
-    print(port);
-    print("\"");
+    print(",");
+    println(port);
     return readResponse();
 }
 
@@ -664,7 +664,7 @@ bool nbIOT::httpControlAddHeader(uint8_t profile, const char* headerData) {
     print(9);
     print(",\"");
     print(headerData);
-    print("\"");
+    println("\"");
     return readResponse();
 }
 
@@ -678,7 +678,7 @@ bool nbIOT::httpSendGet(uint8_t profile, const char* endpoint, const char* respo
     print("\"");
     print(",\"");
     print(responseFile);
-    print("\"");
+    println("\"");
     return readResponse();
 }
 
