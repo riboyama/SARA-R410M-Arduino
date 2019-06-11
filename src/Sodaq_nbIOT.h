@@ -113,6 +113,7 @@ class nbIOT: public Sodaq_AT_Device
         bool httpControlWebAddress(uint8_t profile, const char* address);
         bool httpControlPort(uint8_t profile, const uint16_t port);
         bool httpControlAddHeader(uint8_t profile, const char* headerData);
+        bool httpGenerateImeiHeader(char* buffer);
         bool httpSendGet(uint8_t profile, const char* endpoint, const char* responseFile="getRequest");
         bool httpSendPostData(uint8_t profile, const char* endpoint, const char* message, ContentType contentType, const char* responseFile="postDataRequest");
 
