@@ -668,11 +668,20 @@ bool nbIOT::httpControlAddHeader(uint8_t profile, const char* headerData) {
     return readResponse();
 }
 
+bool nbIOT::httpGenerateImeiHeader(char* buffer) {
+    char header_buffer[8] = "0:Imei:";
+    char imei_buffer[16];
+    this->getIMEI(imei_buffer, 16);
+    
+    strcpy(buffer, header_buffer);
+    strcat(buffer, imei_buffer);
+}
+
 bool nbIOT::httpSendGet(uint8_t profile, const char* endpoint, const char* responseFile) {
     print("AT+UHTTPC=");
     print(profile);
     print(",");
-    print(5);
+    print(1);
     print(",\"");
     print(endpoint);
     print("\"");
