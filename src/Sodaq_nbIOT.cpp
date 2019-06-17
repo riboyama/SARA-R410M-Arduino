@@ -154,6 +154,7 @@ bool nbIOT::getIMEI(char* buffer, size_t size)
     println("AT+CGSN");
 
     return (readResponse<char, size_t>(_nakedStringParser, buffer, &size) == ResponseOK);
+    readResponse();
 }
 
 ResponseTypes nbIOT::_nakedStringParser(ResponseTypes& response, const char* buffer,
@@ -624,38 +625,89 @@ size_t nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t re
     }
 }
 
-bool nbIOT::httpPost(uint8_t profile, const char* endpoint, const char* message) {
-    print("AT+UHTTPC=");
+bool nbIOT::httpControlIpV4Address(uint8_t profile, const char *address) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(0);
+    print(",\"");
+    print(address);
+    println("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpControlWebAddress(uint8_t profile, const char *address) {
+    print("AT+UHTTP=");
+    print(profile);
+    print(",");
+    print(1);
+    print(",\"");
+    print(address);
+    println("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpControlPort(uint8_t profile, const uint16_t port) {
+    print("AT+UHTTP=");
     print(profile);
     print(",");
     print(5);
     print(",");
-    print("\"");
-    print(endpoint);
-    print("\"");
-    print(",");
-    print("\"");
-    print("postResponse");
-    print("\"");
-    print(",");
-    print("\"");
-    print(message);
-    print("\"");
-    print(",");
-    println(0);
-    readResponse();
+    println(port);
+    return readResponse();
 }
 
-bool nbIOT::httpControl(uint8_t profile, uint8_t code, const char* data) {
+bool nbIOT::httpControlAddHeader(uint8_t profile, const char* headerData) {
     print("AT+UHTTP=");
     print(profile);
     print(",");
-    print(code);
-    print(",");
-    print("\"");
-    print(data);
+    print(9);
+    print(",\"");
+    print(headerData);
     println("\"");
-    readResponse();
+    return readResponse();
+}
+
+bool nbIOT::httpGenerateImeiHeader(char* buffer) {
+    char header_buffer[8] = "0:Imei:";
+    char imei_buffer[16];
+    this->getIMEI(imei_buffer, 16);
+    
+    strcpy(buffer, header_buffer);
+    strcat(buffer, imei_buffer);
+}
+
+bool nbIOT::httpSendGet(uint8_t profile, const char* endpoint, const char* responseFile) {
+    print("AT+UHTTPC=");
+    print(profile);
+    print(",");
+    print(1);
+    print(",\"");
+    print(endpoint);
+    print("\"");
+    print(",\"");
+    print(responseFile);
+    println("\"");
+    return readResponse();
+}
+
+bool nbIOT::httpSendPostData(uint8_t profile, const char* endpoint, const char* message, nbIOT::ContentType ct, const char* responseFile) {
+    print("AT+UHTTPC=");
+    print(profile);
+    print(",");
+    print(5);
+    print(",\"");
+    print(endpoint);
+    print("\"");
+    print(",\"");
+    print(responseFile);
+    print("\"");
+    print(",\"");
+    print(message);
+    print("\"");
+    print(",");
+    println(ct);
+    return readResponse();
 }
 
 size_t nbIOT::socketSend(uint8_t socket, const char* remoteIP, const uint16_t remotePort, const char* str)
